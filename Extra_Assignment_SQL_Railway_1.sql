@@ -98,3 +98,115 @@ INSERT INTO HuongDan VALUES
 (7, 'DT04', 1, 7.8),
 (8, 'DT03', 2, 6.5),
 (9, 'DT02', 3, 8.0);
+
+-- 1. Đưa ra thông tin gồm mã số, họ tên và tên khoa của tất cả các giảng viên
+SELECT gv.magv, gv.hotengv, k.tenkhoa
+FROM GiangVien gv
+JOIN Khoa k ON gv.makhoa = k.makhoa;
+
+-- 2. Đưa ra thông tin gồm mã số, họ tên và tên khoa của các giảng viên của khoa 'DIA LY va QLTN'
+SELECT gv.magv, gv.hotengv, k.tenkhoa
+FROM GiangVien gv
+JOIN Khoa k ON gv.makhoa = k.makhoa
+WHERE k.tenkhoa = 'DIA LY va QLTN';
+
+-- 3. Cho biết số sinh viên của khoa 'CONG NGHE SINH HOC'
+SELECT COUNT(*) AS SoSinhVien
+FROM SinhVien sv
+JOIN Khoa k ON sv.makhoa = k.makhoa
+WHERE k.tenkhoa = 'CONG NGHE SINH HOC';
+
+-- 4. Đưa ra danh sách gồm mã số, họ tên và tuổi của các sinh viên khoa 'TOAN'
+SELECT sv.masv, sv.hotensv, (2025 - sv.namsinh) AS tuoi
+FROM SinhVien sv
+JOIN Khoa k ON sv.makhoa = k.makhoa
+WHERE k.tenkhoa = 'TOAN';
+
+-- 5. Cho biết số giảng viên của khoa 'CONG NGHE SINH HOC'
+SELECT COUNT(*) AS SoGiangVien
+FROM GiangVien gv
+JOIN Khoa k ON gv.makhoa = k.makhoa
+WHERE k.tenkhoa = 'CONG NGHE SINH HOC';
+
+-- 6. Cho biết thông tin về sinh viên không tham gia thực tập
+SELECT sv.*
+FROM SinhVien sv
+LEFT JOIN HuongDan hd ON sv.masv = hd.masv
+WHERE hd.masv IS NULL;
+
+-- 7. Đưa ra mã khoa, tên khoa và số giảng viên của mỗi khoa
+SELECT k.makhoa, k.tenkhoa, COUNT(gv.magv) AS SoGiangVien
+FROM Khoa k
+LEFT JOIN GiangVien gv ON k.makhoa = gv.makhoa
+GROUP BY k.makhoa, k.tenkhoa;
+
+-- 8. Cho biết số điện thoại của khoa mà sinh viên có tên 'Le van son' đang theo học
+SELECT k.dienthoai
+FROM SinhVien sv
+JOIN Khoa k ON sv.makhoa = k.makhoa
+WHERE sv.hotensv = 'Le Van Son';
+
+-- 9. Cho biết mã số và tên của các đề tài do giảng viên 'Tran son' hướng dẫn
+SELECT DISTINCT dt.madt, dt.tendt
+FROM DeTai dt
+JOIN HuongDan hd ON dt.madt = hd.madt
+JOIN GiangVien gv ON hd.magv = gv.magv
+WHERE gv.hotengv = 'Tran Son';
+
+-- 10. Cho biết tên đề tài không có sinh viên nào thực tập
+SELECT dt.tendt
+FROM DeTai dt
+LEFT JOIN HuongDan hd ON dt.madt = hd.madt
+WHERE hd.madt IS NULL;
+
+-- 11. Cho biết mã số, họ tên, tên khoa của các giảng viên hướng dẫn từ 3 sinh viên trở lên
+SELECT gv.magv, gv.hotengv, k.tenkhoa
+FROM GiangVien gv
+JOIN Khoa k ON gv.makhoa = k.makhoa
+JOIN HuongDan hd ON gv.magv = hd.magv
+GROUP BY gv.magv, gv.hotengv, k.tenkhoa
+HAVING COUNT(DISTINCT hd.masv) >= 3;
+
+-- 12. Cho biết mã số, tên đề tài của đề tài có kinh phí cao nhất
+SELECT madt, tendt
+FROM DeTai
+WHERE kinhphi = (SELECT MAX(kinhphi) FROM DeTai);
+
+-- 13. Cho biết mã số và tên các đề tài có nhiều hơn 2 sinh viên tham gia thực tập
+SELECT dt.madt, dt.tendt
+FROM DeTai dt
+JOIN HuongDan hd ON dt.madt = hd.madt
+GROUP BY dt.madt, dt.tendt
+HAVING COUNT(DISTINCT hd.masv) > 2;
+
+-- 14. Đưa ra mã số, họ tên và điểm của các sinh viên khoa 'DIALY và QLTN'
+SELECT sv.masv, sv.hotensv, hd.ketqua
+FROM SinhVien sv
+JOIN Khoa k ON sv.makhoa = k.makhoa
+LEFT JOIN HuongDan hd ON sv.masv = hd.masv
+WHERE k.tenkhoa = 'DIA LY va QLTN';
+
+-- 15. Đưa ra tên khoa, số lượng sinh viên của mỗi khoa
+SELECT k.tenkhoa, COUNT(sv.masv) AS SoLuongSV
+FROM Khoa k
+LEFT JOIN SinhVien sv ON k.makhoa = sv.makhoa
+GROUP BY k.tenkhoa;
+
+-- 16. Cho biết thông tin về các sinh viên thực tập tại quê nhà
+SELECT sv.*
+FROM SinhVien sv
+JOIN HuongDan hd ON sv.masv = hd.masv
+JOIN DeTai dt ON hd.madt = dt.madt
+WHERE sv.quequan = dt.NoiThucTap;
+
+-- 17. Hãy cho biết thông tin về những sinh viên chưa có điểm thực tập
+SELECT sv.*
+FROM SinhVien sv
+LEFT JOIN HuongDan hd ON sv.masv = hd.masv
+WHERE hd.ketqua IS NULL OR hd.ketqua = 0;
+
+-- 18. Đưa ra danh sách gồm mã số, họ tên các sinh viên có điểm thực tập bằng 0
+SELECT sv.masv, sv.hotensv
+FROM SinhVien sv
+JOIN HuongDan hd ON sv.masv = hd.masv
+WHERE hd.ketqua = 0;
